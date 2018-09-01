@@ -2,4 +2,4 @@ from flask import Blueprint
 
 index_bp = Blueprint("index", __name__)
 
-from info.module.views import *
+from info.module.index.views import *

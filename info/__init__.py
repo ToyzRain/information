@@ -33,6 +33,9 @@ def create_app(config_name):
 
     csrf = CSRFProtect(app)
 
+    from info.module.index import index_bp
+    app.register_blueprint(index_bp)
+
     return app
 
 
