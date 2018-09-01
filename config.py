@@ -21,6 +21,8 @@ class Config(object):
     SESSION_REDIS = StrictRedis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_NUM)
     SESSION_USE_SIGNER = True
     SESSION_PERMANENT = False
+    # 设置过期时长 默认值：timedelta(days=31)
+    PERMANENT_SESSION_LIFETIME = 86400 * 2
 
 
 class DevelopmentConfig(Config):
