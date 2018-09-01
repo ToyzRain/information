@@ -31,7 +31,7 @@ def create_app(config_name):
     # 这里是为了session会自动存储到redis中, Session的配置比较复杂
     Session(app)
 
-    csrf = CSRFProtect(app)
+    # csrf = CSRFProtect(app)
 
     from info.module.index import index_bp
     app.register_blueprint(index_bp)
