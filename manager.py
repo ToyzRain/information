@@ -1,6 +1,9 @@
-from flask import Flask
+from flask_script import Manager
+from info import create_app
 
-app = Flask(__name__)
+app = create_app("development")
+
+manager = Manager(app)
 
 
 @app.route('/')
@@ -9,4 +12,4 @@ def index():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    manager.run()
