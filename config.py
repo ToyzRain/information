@@ -1,3 +1,4 @@
+import logging
 from redis import StrictRedis
 
 
@@ -16,7 +17,8 @@ class Config(object):
     REDIS_NUM = 6
 
     SESSION_TYPE = "redis"
-    SESSION_REDIS = StrictRedis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_NUM, decode_responses=True)
+    # 这里不需要将解码打开, session在内部传递使用的二进制
+    SESSION_REDIS = StrictRedis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_NUM)
     SESSION_USE_SIGNER = True
     SESSION_PERMANENT = False
 
@@ -24,11 +26,13 @@ class Config(object):
 class DevelopmentConfig(Config):
 
     DEBUG = True
+    LOG_LEVEL = logging.DEBUG
 
 
 class ProductionConfig(Config):
 
     DEBUG = False
+    LOG_LEVEL = logging.WARNING
 
 
 config_dict = {
