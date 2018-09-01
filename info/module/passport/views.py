@@ -18,7 +18,7 @@ def get_image():
 
     name, text, image = captcha.generate_captcha()
     print(text)
-    # 记得设置过期时长, ex可以从源码中看到
+    # 记得设置过期时长, ex可以从源码中看到 一定不要漏
     try:
         redis_store.set("image_code%s" % image_code_id, text, ex=constants.IMAGE_CODE_REDIS_EXPIRES)
     except Exception as e:

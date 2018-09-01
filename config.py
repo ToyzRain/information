@@ -20,8 +20,9 @@ class Config(object):
     # 这里不需要将解码打开, session在内部传递使用的二进制
     SESSION_REDIS = StrictRedis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_NUM)
     SESSION_USE_SIGNER = True
+    # 这里false是避免数据永久存储
     SESSION_PERMANENT = False
-    # 设置过期时长 默认值：timedelta(days=31)
+    # 设置过期时长 默认值：timedelta(days=31),一定不要漏
     PERMANENT_SESSION_LIFETIME = 86400 * 2
 
 
