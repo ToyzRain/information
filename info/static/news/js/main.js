@@ -110,6 +110,35 @@ $(function(){
         }
 
         // 发起登录请求
+        var params = {
+            "mobile": mobile,
+            "password": password
+        }
+        // 发起登录请求
+        // 发起注册请求
+        $.ajax({
+            // 设置url
+             url: "/passport/login",
+             // 设置请求方式
+             type: "post",
+             // 将js对象转换成json字符串发送给后端
+             data: JSON.stringify(params),
+             // 声明上传的数据内容格式是 json字符串
+             contentType: "application/json",
+             dataType: "json",
+             // headers: {
+             //     "X-CSRFToken": getCookie("csrf_token")
+             // },
+             success: function (resp) {
+                if(resp.errno == "0"){
+                    // 返回成功 刷新页面
+                    location.reload()
+                }else{
+                    $("#login-password-err").html(resp.errmsg)
+                    $("#login-password-err").show()
+                }
+             }
+         })
     })
 
 

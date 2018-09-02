@@ -13,3 +13,7 @@ def index():
 @index_bp.route("/favicon.ico")
 def favicon():
     return current_app.send_static_file("news/favicon.ico")
+
+
+# 显示用户信息是不需要额外接口的
+# @index_bp.route("/")

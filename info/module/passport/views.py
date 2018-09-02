@@ -159,3 +159,47 @@ def register():
     session["mobile"] = user.mobile
 
     return jsonify(errno=RET.OK, errmsg="注册成功！")
+
+
+@passport_bp.route("/login", methods=["POST"])
+def login():
+    """
+    1. 获取用户手机号, password
+    2. 验证用户是否存在, 手机号的格式, password 的正确与否
+    3. 成功后更新last_login, 保存session
+    """
+    params_code = request.json
+    mobile = params_code.get("mobile")
+    password = params_code.get("password")
+
+    if not all([mobile, password]):
+        return jsonify(errno=RET.PARAMERR, errmsg="参数不足")
+
+    if not re.match(r'1[356789][0-9]{9}', mobile):
+        return jsonify(errno=RET.PARAMERR, errmsg="手机格式错误")
+
+    try:
+        user = User.query.filter(User.mobile == mobile).first()
+        if not user:
+            return jsonify(errno=RET.NODATA, errmsg="用户不存在")
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="查询用户对象异常")
+
+    # 密码正确返回true
+    if not user.check_passowrd(password):
+        return jsonify(errno=RET.DATAERR, errmsg="密码填写错误")
+
+    user.last_login = datetime.now()
+    try:
+        db.session.commit()
+    except Exception as e:
+        current_app.logger.error(e)
+        db.session.rollback()
+        return jsonify(errno=RET.DBERR, errmsg="用户对象保存到数据库异常")
+
+    session["user_id"] = user.id
+    session["mobile"] = user.mobile
+    session["nick_name"] = user.nick_name
+
+    return jsonify(errno=RET.OK, errmsg="登录成功")
