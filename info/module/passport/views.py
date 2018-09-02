@@ -1,10 +1,12 @@
 import random
 import re
+from datetime import datetime
+from flask import session
 from info.lib.yuntongxun.sms import CCP
 from flask import abort, jsonify
 from flask import current_app
 from flask import request, make_response
-from info import constants
+from info import constants, db
 from info import redis_store
 from info.models import User
 from info.utlis.captcha.captcha import captcha
@@ -57,7 +59,7 @@ def send_sms():
         real_image_code = redis_store.get("image_code%s" % image_code_id)
         # 图形验证码如果存在就删除, 查完之后!!!
         if real_image_code:
-            redis_store.delete(real_image_code)
+            redis_store.delete("image_code%s" % image_code_id)
     except Exception as e:
         current_app.logger.error(e)
         return jsonify(errno=RET.DBERR, errmsg="查询验证码的真实值异常")
@@ -81,14 +83,18 @@ def send_sms():
 
     sms_code = random.randint(0, 999999)
     sms_code = "%06d" % sms_code
-    # current_app.logger.error(sms_code)
+    current_app.logger.error(sms_code)
+
     # try:
-    result = CCP().send_template_sms(mobile, [sms_code, constants.SMS_CODE_REDIS_EXPIRES/60], 1)
+
+    # result = CCP().send_template_sms(mobile, [sms_code, constants.SMS_CODE_REDIS_EXPIRES/60], 1)
+
     # except Exception as e:
     #     current_app.logger.error(e)
     #     return
-    if result:
-        return jsonify(errno=RET.THIRDERR, errmsg="发送短信验证码失败")
+
+    # if result:
+    #     return jsonify(errno=RET.THIRDERR, errmsg="发送短信验证码失败")
 
     try:
         redis_store.set("SMS_%s" % mobile, sms_code, ex=constants.SMS_CODE_REDIS_EXPIRES)
@@ -97,3 +103,59 @@ def send_sms():
         return jsonify(errno=RET.DBERR, errmsg="保存短信验证码到数据库异常")
 
     return jsonify(errno=RET.OK, errmsg="发送短信验证成功")
+
+
+# 注意保存用户的session
+@passport_bp.route("/register", methods=["POST"])
+def register():
+    """
+    1. 接收短信验证码, 密码
+    2. 不需要验证手机号了, 因为是用手机号去redis中获取短信验证码的
+    3. 密码的加密处理
+    4. 将密码的hash值, mobile, Nick_name, last_login, password(利用了装饰器)
+    """
+    params_dict = request.json
+    sms_code = params_dict.get("sms_code")
+    password = params_dict.get("password")
+    mobile = params_dict.get("mobile")
+
+    if not all([sms_code, password, mobile]):
+        return jsonify(errno=RET.PARAMERR, errmsg="参数不足")
+
+    try:
+        real_sms_code = redis_store.get("SMS_%s" % mobile)
+        if real_sms_code:
+            redis_store.delete("SMS_%s" % mobile)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="查询数据库异常")
+    if not real_sms_code:
+        return jsonify(errno=RET.NODATA, errmsg="短信验证码过期")
+
+    if not real_sms_code == sms_code:
+        return jsonify(errno=RET.PARAMERR, errmsg="短信验证码填写错误")
+
+    user = User()
+    user.mobile = mobile
+    user.nick_name = mobile
+    user.last_login = datetime.now()
+    user.password = password
+    # 利用了装饰器, 在setting中传递password参数, 保证赋值的写法
+    # 初始写法:
+    # def make_hash(password):
+    #     password_hash = generate_password_hash(password)
+    #     return password_hash
+
+    try:
+        db.session.add(user)
+        db.session.commit()
+    except Exception as e:
+        current_app.logger.error(e)
+        db.session.rollback()
+        return jsonify(errno=RET.DBERR, errmsg="保存用户对象到数据库异常")
+
+    session["user_id"] = user.id
+    session["nick_name"] = user.nick_name
+    session["mobile"] = user.mobile
+
+    return jsonify(errno=RET.OK, errmsg="注册成功！")

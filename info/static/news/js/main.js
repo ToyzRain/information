@@ -144,7 +144,35 @@ $(function(){
         }
 
         // 发起注册请求
+        // 组织请求数据 js对象
+        var params = {
+            "mobile": mobile,
+            "sms_code": smscode,
+            "password": password
 
+        }
+
+        // 发起注册请求
+        $.ajax({
+            url: "/passport/register",
+            type: "post",
+            data: JSON.stringify(params),
+            contentType: "application/json",
+            dataType: "json",
+            // headers: {
+            //      "X-CSRFToken": getCookie("csrf_token")
+            //  },
+            success:  function (resp) {
+                if(resp.errno == "0"){
+                    // 注册成功回调
+                    location.reload()
+                }else{
+                    $("#register-password-err").html(resp.errmsg)
+                    $("#register-password-err").show()
+                }
+            }
+
+        })
     })
 })
 
