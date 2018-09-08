@@ -1,17 +1,20 @@
 import random
 import re
 from datetime import datetime
+
+from flask import g
 from flask import session
 from info.lib.yuntongxun.sms import CCP
 from flask import abort, jsonify
 from flask import current_app
-from flask import request, make_response
+from flask import request, make_response, render_template
 from info import constants, db
 from info import redis_store
 from info.models import User
 from info.utlis.captcha.captcha import captcha
 from info.module.passport import passport_bp
 from info.utlis.response_code import RET
+from info.utlis.common import login_user_data
 
 
 @passport_bp.route("/image_code")
@@ -203,3 +206,14 @@ def login():
     session["nick_name"] = user.nick_name
 
     return jsonify(errno=RET.OK, errmsg="登录成功")
+
+
+@passport_bp.route("/login_out", methods=["POST"])
+@login_user_data
+def login_out():
+
+    session.pop("user_id")
+    session.pop("mobile")
+    session.pop("nick_name")
+
+    return jsonify(errno=RET.OK, errmsg="退出成功")
