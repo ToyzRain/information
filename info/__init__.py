@@ -6,6 +6,7 @@ from redis import StrictRedis
 from config import config_dict
 from flask_session import Session
 from flask_wtf.csrf import CSRFProtect, generate_csrf
+from info.utlis.common import do_index_class
 
 # 由于db后续会用到, 所有暴露出来
 db = SQLAlchemy()
@@ -16,7 +17,7 @@ def create_app(config_name):
 
     app = Flask(__name__)
     app.config.from_object(config_dict[config_name])
-
+    app.add_template_filter(do_index_class)
     # 一定要调用才能创建日志
     create_log(config_name)
 
