@@ -12,7 +12,7 @@
 <body>
     <div class="header_con">
         <div class="header">
-            <a href="#" class="logo fl"><img src="../static/news/images/logo.png" alt="logo"></a>
+            <a href="{{ url_for("index.index") }}" class="logo fl"><img src="../static/news/images/logo.png" alt="logo"></a>
             <ul class="menu fl">
                 <li class="active" data-cid="0"><a href="javascript:;">最新</a></li>
                 <li data-cid="1"><a href="javascript:;">股市</a></li>
@@ -27,6 +27,7 @@
                     <img src="{% if data.user_info.avatar_url %}{{ data.user_info.avatar_url }}{% else %}../../static/news/images/person01.png{% endif %}" class="lgin_pic">
                     <a href="#">{{ data.user_info.nick_name }}</a>
                     <a href="javascript:;", onclick="login_out()">退出</a>
+{#                    <a href="{{ url_for("passport.login_out") }}">退出</a>#}
                 </div>
             {% else %}
                 <div class="user_btns fr">

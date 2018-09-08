@@ -3,6 +3,7 @@ import re
 from datetime import datetime
 
 from flask import g
+from flask import redirect
 from flask import session
 from info.lib.yuntongxun.sms import CCP
 from flask import abort, jsonify
@@ -208,6 +209,7 @@ def login():
     return jsonify(errno=RET.OK, errmsg="登录成功")
 
 
+# @passport_bp.route("/login_out")
 @passport_bp.route("/login_out", methods=["POST"])
 @login_user_data
 def login_out():
@@ -216,4 +218,6 @@ def login_out():
     session.pop("mobile")
     session.pop("nick_name")
 
+    # redirect这样只会每次都返回到这里, 然而render_template会将地址栏锁死在当前路由下
+    # return redirect("/")
     return jsonify(errno=RET.OK, errmsg="退出成功")
